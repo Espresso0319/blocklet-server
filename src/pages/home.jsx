@@ -1,6 +1,7 @@
 import { Button, Form, Input, message } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import api from '../libs/api';
 import './home.css';
 
 const layout = {
@@ -15,24 +16,45 @@ const tailLayout = {
 function Home() {
   const [isEditing, setIsEditing] = useState(false); // 是否处于编辑模式
   const [profile, setProfile] = useState({
-    username: 'JohnDoe',
-    email: 'johndoe@example.com',
-    phone: '123-456-7890',
+    username: '',
+    email: '',
+    phone: '',
   });
 
   const [form] = Form.useForm(); // Ant Design 表单实例
 
+  // 获取用户信息
+  const getUser = async () => {
+    try {
+      const { data } = await api.get('/api/profile');
+      setProfile(data); // 设置获取到的用户信息
+      form.setFieldsValue(data); // 设置表单初始值
+    } catch (error) {
+      message.error('Failed to fetch user data.');
+    }
+  };
+
+  // 在组件挂载时调用 getUser
+  /* eslint-disable react-hooks/exhaustive-deps */
+  useEffect(() => {
+    getUser();
+  }, []);
+
   // 切换到编辑模式
   const handleEdit = () => {
     setIsEditing(true);
-    form.setFieldsValue(profile); // 设置表单初始值
   };
 
   // 保存编辑的内容
   const handleSave = async () => {
     try {
       const values = await form.validateFields(); // 校验表单
-      setProfile(values); // 保存表单数据
+
+      // 调用 PUT /profile 接口进行更新
+      const response = await api.put('api/profile', values);
+
+      setProfile(response.data.profile); // 保存更新后的数据
+
       setIsEditing(false); // 切换回展示模式
       message.success('Profile updated successfully!');
     } catch (errorInfo) {
