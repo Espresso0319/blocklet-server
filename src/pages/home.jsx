@@ -51,9 +51,9 @@ function Home() {
       const values = await form.validateFields(); // 校验表单
 
       // 调用 PUT /profile 接口进行更新
-      const response = await api.put('api/profile', values);
+      await api.put('api/profile', values);
 
-      setProfile(response.data.profile); // 保存更新后的数据
+      setProfile(values); // 保存更新后的数据
 
       setIsEditing(false); // 切换回展示模式
       message.success('Profile updated successfully!');
